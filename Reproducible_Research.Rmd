@@ -1,0 +1,108 @@
+---
+title: "Reproducible Research : Peer Assessment 1:Data from a Personal Activity Monitoring Device"
+author: " "
+date: "October 18, 2015"
+output: html_document
+---
+
+#Introduction
+It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the "quantified self" movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
+
+This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+
+#Data
+
+The data for this assignment can be downloaded from the course web site:
+    Dataset: [ Activity monitoring data ][1] [52K]
+The variables included in this dataset are:
+
+    -steps:    Number of steps taking in a 5-minute interval (missing values are coded as NA).
+    -date:     The date on which the measurement was taken in YYYY-MM-DD format.
+    -interval: Identifier for the 5-minute interval in which measurement was taken.
+
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
+##Solution
+
+###Loading and preprocessing the data
+
+Download the zip file and unzip it into the working directory and set the working directory in Rstudio.
+
+
+
+Load the data:
+```{r, echo=TRUE}
+#load data
+setwd("H:/school/coursera/data science/repositories/Reproducible Research")
+activity <- read.csv("activity.csv", header = TRUE, sep = ",")
+```
+
+###What is mean total number of steps taken per day?
+
+
+* Calculate the total number of steps taken per day.
+
+```{r, echo=TRUE}
+#num determine the step by step process
+#Draw the historgram as well
+#Calculate mean (m) and median (md)
+
+num <- aggregate(steps ~ date, activity, sum)
+hist(num$steps, main = paste("Steps Taken Per Day"), col="royalblue",xlab="Number of Steps")
+m <- mean(num$steps)
+#The mean is:
+m
+md <- median(num$steps)
+#The medain is:
+md
+
+```
+###What is the average daily activity pattern?
+
+    * Make a time series plot (i.e. type = "l") of the 5-minute interval 
+    (x-axis) and the average number of steps taken, averaged across all days (y-axis).
+    *Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r, echo=TRUE}
+range<- aggregate(steps ~ interval, activity, mean)
+plot(range$interval,range$steps, type="l", xlab="Intervals", ylab="Number of Steps",main="Average Number of Steps Per Day")
+max_interval <- range[which.max(range$steps),1]
+max_interval
+```
+###Input Miising Values
+Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+    Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+
+    Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+    Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+    Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+```{r, echo=TRUE}
+#total number of NAs
+total<- sum(!complete.cases(activity))
+total
+#Using Mean for the day compute missing values
+StepsAverage <- aggregate(steps ~ interval, data = data, FUN = mean)
+fillNA <- numeric()
+for (i in 1:nrow(data)) {
+    obs <- data[i, ]
+    if (is.na(obs$steps)) {
+        steps <- subset(StepsAverage, interval == obs$interval)$steps
+    } else {
+        steps <- obs$steps
+    }
+    fillNA <- c(fillNA, steps)
+}
+#new dataset 
+new_activity <- activity
+new_activity$steps <- fillNA
+#Make a new histogram
+
+
+```
+
+[1]: http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip "Activity monitoring data"
